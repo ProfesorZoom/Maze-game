@@ -72,7 +72,7 @@ public class Board {
             return true;
         return false;
     }
-    public boolean areBorderCoordinates(Cell cell){
+    public boolean isBorderCell(Cell cell){
         if( ( cell.getX() == 0 )
                 || ( cell.getX() == ( width - 1 ) )
                 || ( cell.getY() == 0 )
@@ -93,9 +93,39 @@ public class Board {
         return field[y][x];
     }
     public void generateField(){    //subject to change, gonna experiment on this
+        /*
+        //fills the board randomly
         for(int i = 1; i < height-1; ++i){
             for(int j = 1; j < width-1; ++j){
                     field[i][j].setWallState(rand.nextBoolean());
+            }
+        }
+         */
+        for(int k = 0; k<1000; ++k){  //how many times should the field be corrected, TODO: change into auto detection of change number
+            for(int i = 1; i < height-1; ++i){
+                for(int j = 1; j < width-1; ++j){
+                    //if(field[i][j].isWall())
+                        //continue;
+                    //if(!field[i][j].isWall())
+                        //continue;
+                    int dir_neighbors, diag_neighbors;
+                    int temp = checkNeighbors(field[i][j]);
+                    dir_neighbors = temp%10;
+                    diag_neighbors = temp/10;
+                    /*
+                    if(diag_neighbors == 4){
+                        if(dir_neighbors > 1){
+                            field[i][j].setWallState(false);
+                        }
+                    }*/
+                    // automaton ruleset
+                    if(!field[i][j].isWall())
+                        if(dir_neighbors+diag_neighbors == 3)
+                            field[i][j].setWallState(true);
+                    if(field[i][j].isWall())
+                        if(dir_neighbors+diag_neighbors > 4)
+                            field[i][j].setWallState(false);
+                }
             }
         }
 
@@ -111,5 +141,35 @@ public class Board {
             }
             System.out.println();
         }
+    }
+
+    /**
+     * Method for checking the number and type of cells in the neighborhood
+     * Return type is int, can be max 44,
+     * First digit represents number of walls in direct neighborhood
+     * Second digit represents number of walls in diagonal neighborhood
+     * Eg. 32 means there are 2 walls in direct and 3 in diagonal neighborhood
+     * @return Number of cells in neighborhood
+     */
+    public int checkNeighbors(Cell cell){
+        int dir_counter = 0, diag_counter = 0;
+        if(isBorderCell(cell)){
+            return -1;
+        }
+        for(int i = -1; i < 2; ++i){
+            for(int j = -1; j < 2; ++j){
+                if(field[cell.getY()+i][cell.getX()+j] == cell){
+                    continue;
+                }
+                if(field[cell.getY()+i][cell.getX()+j].isWall()){
+                    if ((i == 0)||(j == 0)){
+                        dir_counter++;
+                    }else{
+                        diag_counter++;
+                    }
+                }
+            }
+        }
+        return dir_counter + diag_counter*10;
     }
 }
