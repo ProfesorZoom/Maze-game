@@ -1,11 +1,13 @@
 package com.jkcieslak.mazegame;
 
+//TODO: Stop butchering java conventions and correct most of this
+
 public class Cell {
     private boolean isWall;
     private boolean isFinal;
     private int x;  //horizontal position coordinate
     private int y;  //vertical position coordinate
-    public Cell(int x, int y, boolean isWall, boolean isFinal){
+    public Cell(int x, int y, boolean isWall, boolean isFinal) {
         this.x = x;
         this.y = y;
         this.isWall = isWall;
@@ -17,7 +19,7 @@ public class Cell {
         this.isWall = false;
         this.isFinal = false;
     }
-    public Cell(){
+    public Cell() {
         this.x = -1;
         this.y = -1;
         this.isWall = false;
@@ -39,7 +41,7 @@ public class Cell {
     public void setY(int y){
         this.y = y;
     }
-    public void setCoordinates(int x, int y){
+    public void setCoordinates(int x, int y) {
         this.x = x;
         this.y = y;
     }

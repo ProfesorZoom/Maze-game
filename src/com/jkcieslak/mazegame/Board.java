@@ -1,5 +1,9 @@
 package com.jkcieslak.mazegame;
 
+//TODO: Stop butchering java conventions and correct most of this
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Board {
@@ -9,28 +13,23 @@ public class Board {
     private Cell[][] field;
     private Cell entrance;
     private Cell exit;
+    private final int seed;
     private final Random rand;
     public Board(int width, int height, int seed){
+        this.seed = seed;
         this.rand = new Random(seed);
         this.width = width;
         this.height = height;
         this.field = new Cell[height][width];
-        for(int i = 0; i < height; ++i) {
+        for(int i = 0; i < height; ++i) {   //filling the board with walls while marking outer walls
             for (int j = 0; j < width; ++j) {
                 if (areBorderCoordinates(j, i)) {
                     field[i][j] = new Cell(j, i, true, true);
                 }else{
-                    field[i][j] = new Cell(j, i, false, false);
+                    field[i][j] = new Cell(j, i, true, false);
                 }
             }
         }
-        this.entrance = chooseExit();
-        this.exit = chooseExit();
-        while (this.exit == this.entrance){
-            this.exit = chooseExit();
-        }
-        this.entrance.setWallState(false);
-        this.exit.setWallState(false);
         generateField();
         this.isGenerated = true;
     }
@@ -40,13 +39,19 @@ public class Board {
     public int getHeight(){
         return height;
     }
+    public int getSeed() {return seed;}
     public boolean isGenerated() {
         return isGenerated;
     }
     public Cell getCell(int x, int y){
         return field[y][x];
     }
+    public Cell getEntrance(){return entrance;}
+    public Cell getExit(){return exit;}
     public boolean getCellWallState(int x, int y){
+        if((x<0)||(x>=width)||(y<0)||(y>=height)){  //anomalous behavior for out of bound cells, used in finding entrance/exit
+            return true;
+        }
         return field[y][x].isWall();
     }
     public boolean getCellWallState(Cell cell){
@@ -92,45 +97,45 @@ public class Board {
         }
         return field[y][x];
     }
-    public void generateField(){    //subject to change, gonna experiment on this
-        /*
-        //fills the board randomly
-        for(int i = 1; i < height-1; ++i){
-            for(int j = 1; j < width-1; ++j){
-                    field[i][j].setWallState(rand.nextBoolean());
-            }
-        }
-         */
-        for(int k = 0; k<1000; ++k){  //how many times should the field be corrected, TODO: change into auto detection of change number
-            for(int i = 1; i < height-1; ++i){
-                for(int j = 1; j < width-1; ++j){
-                    //if(field[i][j].isWall())
-                        //continue;
-                    //if(!field[i][j].isWall())
-                        //continue;
-                    int dir_neighbors, diag_neighbors;
-                    int temp = checkNeighbors(field[i][j]);
-                    dir_neighbors = temp%10;
-                    diag_neighbors = temp/10;
-                    /*
-                    if(diag_neighbors == 4){
-                        if(dir_neighbors > 1){
-                            field[i][j].setWallState(false);
-                        }
-                    }*/
-                    // automaton ruleset
-                    if(!field[i][j].isWall())
-                        if(dir_neighbors+diag_neighbors == 3)
-                            field[i][j].setWallState(true);
-                    if(field[i][j].isWall())
-                        if(dir_neighbors+diag_neighbors > 4)
-                            field[i][j].setWallState(false);
-                }
-            }
-        }
 
-        return;
+    /**
+     * Method used for generating a maze using randomized Prim's algorithm
+     */
+    public void generateField(){
+        int x, y;
+        Cell starter_cell, temp_cell;
+        List<Cell> wall_list = new ArrayList<Cell>();
+        //pick a random starter cell
+        x = rand.nextInt(width-2)+1;
+        y = rand.nextInt(height-2)+1;
+        starter_cell = getCell(x, y);
+        starter_cell.setWallState(false);
+        starter_cell.setFinalState(true);
+        //adding starter wall neighbors to final walls list
+        addNeighborsToWallList(starter_cell, wall_list);
+        //Main algorithm maze generation loop
+        while(!wall_list.isEmpty()){
+            temp_cell = wall_list.get(rand.nextInt(wall_list.size()));
+            if(checkDirectNeighbors(temp_cell) == 1){
+                temp_cell.setWallState(false);
+                temp_cell.setFinalState(true);
+                addNeighborsToWallList(temp_cell, wall_list);
+            }
+            wall_list.remove(temp_cell);
+        }
+        //Adding entrance and exit
+        do{
+            temp_cell = chooseExit();
+        }while(checkDirectNeighbors(temp_cell) != 1);
+        entrance = temp_cell;
+        entrance.setWallState(false);
+        do{
+            temp_cell = chooseExit();
+        }while((checkDirectNeighbors(temp_cell) != 1) || (temp_cell == entrance));
+        exit = temp_cell;
+        exit.setWallState(false);
     }
+
     public void drawInConsole(){
         for(int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
@@ -144,32 +149,54 @@ public class Board {
     }
 
     /**
-     * Method for checking the number and type of cells in the neighborhood
-     * Return type is int, can be max 44,
-     * First digit represents number of walls in direct neighborhood
-     * Second digit represents number of walls in diagonal neighborhood
-     * Eg. 32 means there are 2 walls in direct and 3 in diagonal neighborhood
-     * @return Number of cells in neighborhood
+     * Method for checking the number and type of cells in the direct neighborhood
+     * Return type is int
+     * @return int, Number of empty cells in neighborhood
      */
-    public int checkNeighbors(Cell cell){
-        int dir_counter = 0, diag_counter = 0;
+    public int checkDirectNeighbors(Cell cell){
+        int dir_counter, x, y;
+        dir_counter = 0;
+        x = cell.getX();
+        y = cell.getY();
+        /*
         if(isBorderCell(cell)){
             return -1;
         }
-        for(int i = -1; i < 2; ++i){
-            for(int j = -1; j < 2; ++j){
-                if(field[cell.getY()+i][cell.getX()+j] == cell){
-                    continue;
-                }
-                if(field[cell.getY()+i][cell.getX()+j].isWall()){
-                    if ((i == 0)||(j == 0)){
-                        dir_counter++;
-                    }else{
-                        diag_counter++;
-                    }
-                }
-            }
-        }
-        return dir_counter + diag_counter*10;
+
+         */
+        if(!getCellWallState(x-1,y)) //West Neighbor
+            dir_counter++;
+        if(!getCellWallState(x+1,y)) //East Neighbor
+            dir_counter++;
+        if(!getCellWallState(x,y-1)) //North Neighbor
+            dir_counter++;
+        if(!getCellWallState(x,y+1)) //South Neighbor
+            dir_counter++;
+        return dir_counter;
+    }
+    public void addNeighborsToWallList(Cell center_cell, List wall_list){
+        int x, y;
+        x = center_cell.getX();
+        y = center_cell.getY();
+        if((getCellWallState(x-1,y)) && (!getCellFinalState(x-1,y))) //West Neighbor
+            wall_list.add(getCell(x-1,y));
+        if((getCellWallState(x+1,y)) && (!getCellFinalState(x+1,y))) //East Neighbor
+            wall_list.add(getCell(x+1,y));
+        if((getCellWallState(x,y-1)) && (!getCellFinalState(x,y-1))) //North Neighbor
+            wall_list.add(getCell(x,y-1));
+        if((getCellWallState(x,y+1)) && (!getCellFinalState(x,y+1))) //South Neighbor
+            wall_list.add(getCell(x,y+1));
+    }
+    public ArrayList<Cell> getNeighbors(Cell center_cell, boolean state){
+        ArrayList<Cell> cell_neighbors = new ArrayList<Cell>();
+        if(getCellWallState(center_cell.getX()-1, center_cell.getY()) == state) //West Neighbor
+            cell_neighbors.add(getCell(center_cell.getX()-1, center_cell.getY()));
+        if(getCellWallState(center_cell.getX()+1,center_cell.getY()) == state) //East Neighbor
+            cell_neighbors.add(getCell(center_cell.getX()+1, center_cell.getY()));
+        if(getCellWallState(center_cell.getX(), center_cell.getY()-1) == state) //North Neighbor
+            cell_neighbors.add(getCell(center_cell.getX(), center_cell.getY()-1));
+        if(getCellWallState(center_cell.getX(), center_cell.getY()+1) == state) //South Neighbor
+            cell_neighbors.add(getCell(center_cell.getX(), center_cell.getY()+1));
+        return cell_neighbors;
     }
 }
