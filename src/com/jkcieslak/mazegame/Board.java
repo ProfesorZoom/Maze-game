@@ -39,6 +39,7 @@ public class Board {
     public int getHeight(){
         return height;
     }
+    public Cell[][] getField() { return field;}
     public int getSeed() {return seed;}
     public boolean isGenerated() {
         return isGenerated;
@@ -70,20 +71,16 @@ public class Board {
         field[y][x].setFinalState(isFinal);
     }
     public boolean areBorderCoordinates(int x, int y){
-        if( ( x == 0 )
-                || ( x == ( width - 1 ) )
-                || ( y == 0 )
-                || ( y == ( height - 1 ) ) )
-            return true;
-        return false;
+        return (x == 0)
+                || (x == (width - 1))
+                || (y == 0)
+                || (y == (height - 1));
     }
     public boolean isBorderCell(Cell cell){
-        if( ( cell.getX() == 0 )
-                || ( cell.getX() == ( width - 1 ) )
-                || ( cell.getY() == 0 )
-                || ( cell.getY() == ( height - 1 ) ) )
-            return true;
-        return false;
+        return (cell.getX() == 0)
+                || (cell.getX() == (width - 1))
+                || (cell.getY() == 0)
+                || (cell.getY() == (height - 1));
     }
     public Cell chooseExit(){
         int x, y;
@@ -104,7 +101,7 @@ public class Board {
     public void generateField(){
         int x, y;
         Cell starter_cell, temp_cell;
-        List<Cell> wall_list = new ArrayList<Cell>();
+        List<Cell> wall_list = new ArrayList<>();
         //pick a random starter cell
         x = rand.nextInt(width-2)+1;
         y = rand.nextInt(height-2)+1;
@@ -174,7 +171,7 @@ public class Board {
             dir_counter++;
         return dir_counter;
     }
-    public void addNeighborsToWallList(Cell center_cell, List wall_list){
+    public void addNeighborsToWallList(Cell center_cell, List<Cell> wall_list){
         int x, y;
         x = center_cell.getX();
         y = center_cell.getY();
@@ -188,7 +185,7 @@ public class Board {
             wall_list.add(getCell(x,y+1));
     }
     public ArrayList<Cell> getNeighbors(Cell center_cell, boolean state){
-        ArrayList<Cell> cell_neighbors = new ArrayList<Cell>();
+        ArrayList<Cell> cell_neighbors = new ArrayList<>();
         if(getCellWallState(center_cell.getX()-1, center_cell.getY()) == state) //West Neighbor
             cell_neighbors.add(getCell(center_cell.getX()-1, center_cell.getY()));
         if(getCellWallState(center_cell.getX()+1,center_cell.getY()) == state) //East Neighbor

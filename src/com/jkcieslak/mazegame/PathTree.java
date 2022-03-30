@@ -8,12 +8,12 @@ import java.util.ArrayList;
 public class PathTree {
     private final TreeNode root;
     private final Board board;
-    private ArrayDeque<TreeNode> exitPath;
-    private boolean exitPathConstructed = false;
+    private final ArrayDeque<TreeNode> exitPath;
+    private boolean isExitPathConstructed = false;
     public PathTree(Board board){
         this.board = board;
         root = new TreeNode(this.board.getEntrance());
-        this.exitPath = new ArrayDeque<TreeNode>();
+        this.exitPath = new ArrayDeque<>();
         addTreeNodeChildren(root);
     }
     public static class TreeNode {
@@ -33,13 +33,13 @@ public class PathTree {
 
         /**
          * Single parameter constructor used in constructing a root node in a tree.
-         * @param cell
+         * @param cell Cell on which to construct a root node of a tree (usually maze entrance)
          */
         public TreeNode(Cell cell){
             this();
             this.cell = cell;
             this.depthLevel = 0;
-            this.children = new ArrayList<TreeNode>();
+            this.children = new ArrayList<>();
             //System.out.println("Root Node created.");
         }
         public TreeNode(Cell cell, TreeNode parent){
@@ -47,7 +47,7 @@ public class PathTree {
             this.cell = cell;
             this.parent = parent;
             this.depthLevel = parent.depthLevel +1;
-            this.children = new ArrayList<TreeNode>();
+            this.children = new ArrayList<>();
             //System.out.println("Node created. Node depth: " + depthLevel);
         }
         public Cell getCell(){
@@ -85,25 +85,24 @@ public class PathTree {
         traverse(root);
     }
     void traverse(TreeNode node){
-        if(exitPathConstructed == true)
+        if(isExitPathConstructed)
             return;
         exitPath.addLast(node);
         if(exitPath.getLast().getCell() == board.getExit()) {
-            exitPathConstructed = true;
+            isExitPathConstructed = true;
             return;
         }
         for(TreeNode child : node.getChildren())
             traverse(child);
-        if(exitPathConstructed == false)
+        if(!isExitPathConstructed)
             exitPath.removeLast();
-        return;
     }
     public ArrayDeque<TreeNode> getExitPath(){
         return exitPath;
     }
-    public void printExitPath(){    //self explanatory name, for debug purposes
+    public void printExitPath(){    //self-explanatory name, for debug purposes
         for (TreeNode node : exitPath){
-            System.out.print(node.depthLevel+".[" + node.getCell().getX() + ", " + node.getCell().getY() + "]\t");
+            System.out.print(node.getDepthLevel()+".[" + node.getCell().getX() + ", " + node.getCell().getY() + "]\t");
         }
     }
 }

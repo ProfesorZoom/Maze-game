@@ -18,12 +18,28 @@ public class Main {
         if(args.length == 3) {
             seed = Integer.parseInt(args[2]);
         }
-        Board game_board = new Board(width, height, seed);
-        game_board.drawInConsole();
-        PathTree pathTree = new PathTree(game_board);
-        pathTree.constructExitPath();
-        pathTree.printExitPath();
-        //System.out.println(game_board.getSeed());
-        game_board = null;
+        Game game = new Game(width, height, seed);
+        game.getBoard().drawInConsole();
+        GameRenderer gameRenderer = new GameRenderer(game, 20);
+        int ticker = 0;
+        while(true){
+            if(ticker % 20 == 0) {
+                gameRenderer.RenderPlayers();
+            }
+            if(ticker % 100000 == 0){
+                game.movePlayer();
+                ticker = 0;
+                gameRenderer.repaint();
+            }
+            if(game.getPlayerOne().location == game.getBoard().getExit()){
+                System.out.println("Congratulations. You won!");
+                break;
+            }else if(game.getPlayerTwo().location == game.getBoard().getExit()) {
+                System.out.println("You lost. Better luck next time!");
+                break;
+            }
+            ticker++;   //TODO: Program behavior after finished game
+        }
+
     }
 }
