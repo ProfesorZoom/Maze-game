@@ -92,7 +92,9 @@ public class GameRenderer extends JFrame implements KeyListener{
         graphics.setColor(playerTwoColor);
         graphics.fillOval(game.getPlayerTwo().getLocation().getX()*scale, game.getPlayerTwo().getLocation().getY()*scale, scale, scale);
     }
-
+    public Game getGame(){
+        return this.game;
+    }
     @Override
     public void keyTyped(KeyEvent e) {
         System.out.println("keyTyped");
@@ -109,6 +111,7 @@ public class GameRenderer extends JFrame implements KeyListener{
         if(keyCode == 37 || keyCode == 65)
             game.movePlayer(Direction.WEST);
         System.out.println("Key Pressed: "+ keyCode);
+        RenderPlayers();
         repaint();
     }
 
