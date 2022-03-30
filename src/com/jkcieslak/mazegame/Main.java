@@ -8,7 +8,7 @@ import java.util.Timer;
 public class Main {
 
     public static void main(String[] args) {
-        int width = 50, height = 25, seed;
+        int width = 15, height = 15, seed;
         Random temp_rand = new Random();
         seed = temp_rand.nextInt();
         //control over program executed with arguments
@@ -23,33 +23,29 @@ public class Main {
         Game game = new Game(width, height, seed);
         game.getBoard().drawInConsole();
         GameRenderer gameRenderer = new GameRenderer(game, 20);
-        //Timer timer = new Timer();
-        //AIHandling aiHandling = new AIHandling(gameRenderer, timer);
-        int ticker = 0;
-        //timer.schedule(aiHandling.MoveAI, 0, 1000);
+        SharedAIObject SAIO = new SharedAIObject(game);
+        AIHandling aiHandling = new AIHandling(SAIO);
+        aiHandling.start();
         while(true){
-            //timer.schedule(aiHandling.MoveAI, 0, 1000);
-
-            if(ticker % 500000000 == 0){
+            if(SAIO.readMove() == true) {
                 game.movePlayer();
                 gameRenderer.RenderPlayers();
-                ticker = 0;
                 gameRenderer.repaint();
+                SAIO.setMove(false);
             }
-
             if(game.getPlayerOne().location == game.getBoard().getExit()){
-                //timer.purge();
                 System.out.println("Congratulations. You won!");
                 gameRenderer.repaint();
+                SAIO.doStop();
                 break;
             }else if(game.getPlayerTwo().location == game.getBoard().getExit()) {
-                //timer.purge();
                 System.out.println("You lost. Better luck next time!");
                 gameRenderer.repaint();
+                SAIO.doStop();
                 break;
-            }
-            ticker++;   //TODO: Program behavior after finished game
+            }//TODO: Program behavior after finished game
         }
         gameRenderer.dispose();
+        aiHandling = null;
     }
 }

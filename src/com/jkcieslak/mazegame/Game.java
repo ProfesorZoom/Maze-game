@@ -1,8 +1,8 @@
 package com.jkcieslak.mazegame;
 
 public class Game {
-    private final Player playerOne;
-    private final Player playerTwo;
+    private final HumanPlayer playerOne;
+    private final AIPlayer playerTwo;
     private final Board board;
 
     public Game(int width, int height, int seed){

@@ -1,28 +1,24 @@
 package com.jkcieslak.mazegame;
 
+public class AIHandling extends Thread{
+    private SharedAIObject SAIO;
+    private boolean doStop;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-public class AIHandling {
-    private GameRenderer gameRenderer;
-    private Timer timer;
-    public AIHandling(GameRenderer gameRenderer, Timer timer){
-        this.gameRenderer = gameRenderer;
-        this.timer = timer;
+    public AIHandling(SharedAIObject SAIO) {
+        this.SAIO = SAIO;
+        this.doStop = false;
     }
 
-    TimerTask MoveAI = new TimerTask() {
-        @Override
-        public void run() {
-            if(gameRenderer.getGame().getPlayerTwo().getLocation() == gameRenderer.getGame().getBoard().getExit()){
-                timer.purge();
-                return;
+    @Override
+    public void run() {
+        while(SAIO.keepRunning()){
+            try{
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            gameRenderer.getGame().movePlayer();
-            gameRenderer.RenderPlayers();
-            gameRenderer.repaint();
+            SAIO.updateMove();
         }
-    };
+    }
 }
 
