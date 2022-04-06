@@ -1,12 +1,10 @@
 package com.jkcieslak.mazegame;
 
 public class SharedAIObject {
-    private Game game;
     private boolean doMove;
     private boolean doStop;
 
-    public SharedAIObject(Game game){
-        this.game = game;
+    public SharedAIObject(){
         doMove = false;
         doStop = false;
     }

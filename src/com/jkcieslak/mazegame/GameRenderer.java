@@ -30,9 +30,9 @@ public class GameRenderer extends JFrame implements KeyListener{
             try {
                 BufferedImage loadedTexture = ImageIO.read(new File("src\\com\\jkcieslak\\mazegame\\bricks.png"));
                 Graphics2D loadedTextureGraphics = loadedTexture.createGraphics();
-                brickTextureGraphics.drawImage(loadedTexture.getScaledInstance(32, 32, Image.SCALE_DEFAULT), null, null);
+                brickTextureGraphics.drawImage(loadedTexture.getScaledInstance(scale, scale, Image.SCALE_DEFAULT), null, null);
             } catch (IOException e){
-                System.out.println("Error loading wall texture!");
+                System.out.println("Error loading wall texture! Generating placeholder.");
                 brickTextureGraphics.setColor(Color.BLACK);
                 brickTextureGraphics.fillRect(0, 0, scale, scale);
             }
@@ -69,8 +69,10 @@ public class GameRenderer extends JFrame implements KeyListener{
             this.playerTexture = playerTexture;
             this.AITexture = AITexture;
             Graphics2D graphics = image.createGraphics();
-            graphics.drawImage(playerTexture, null, game.getPlayerOne().getLocation().getX()*scale,game.getPlayerOne().getLocation().getY()*scale );
-            graphics.drawImage(AITexture, null, game.getPlayerTwo().getLocation().getX()*scale,game.getPlayerTwo().getLocation().getY()*scale );
+            if(game.getPlayerOne() != null)
+                graphics.drawImage(playerTexture, null, game.getPlayerOne().getLocation().getX()*scale,game.getPlayerOne().getLocation().getY()*scale );
+            if(game.getPlayerTwo() != null)
+                graphics.drawImage(AITexture, null, game.getPlayerTwo().getLocation().getX()*scale,game.getPlayerTwo().getLocation().getY()*scale );
         }
         @Override
         protected void paintComponent(Graphics g){
@@ -104,12 +106,12 @@ public class GameRenderer extends JFrame implements KeyListener{
 
         BackgroundPanel backgroundPanel = new BackgroundPanel();
         backgroundPanel.setBounds(0, menuBar.getHeight(), game.getBoardWidth()*scale, game.getBoardHeight()*scale + menuBar.getHeight());
-        jLayeredPane.add(backgroundPanel, 0);
+        jLayeredPane.add(backgroundPanel, 1);
 
         try {
             playerTexture = ImageIO.read(new File("src\\com\\jkcieslak\\mazegame\\balloon.png"));
         } catch (IOException e){
-            System.out.println("Error loading player texture!");
+            System.out.println("Error loading player texture! Generating placeholder");
             playerTexture = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
             Graphics2D playerTextureGraphics = playerTexture.createGraphics();
             playerTextureGraphics.setColor(playerOneColor);
@@ -118,7 +120,7 @@ public class GameRenderer extends JFrame implements KeyListener{
         try {
             AITexture = ImageIO.read(new File("src\\com\\jkcieslak\\mazegame\\aibot.png"));
         } catch (IOException e){
-            System.out.println("Error loading AI texture!");
+            System.out.println("Error loading AI texture! Generating placeholder");
             AITexture = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
             Graphics2D AITextureGraphics = AITexture.createGraphics();
             AITextureGraphics.setColor(playerTwoColor);
@@ -127,7 +129,7 @@ public class GameRenderer extends JFrame implements KeyListener{
 
         playerPane = new PlayerPane(playerTexture, AITexture);
         playerPane.setBounds(0, menuBar.getHeight(), game.getBoardWidth()*scale, game.getBoardHeight()*scale + menuBar.getHeight());
-        jLayeredPane.add(playerPane, 1);
+        jLayeredPane.add(playerPane, 0);
 
         rootPane.setLayeredPane(jLayeredPane);
         //setContentPane(jLayeredPane);
@@ -142,11 +144,13 @@ public class GameRenderer extends JFrame implements KeyListener{
             }
         });
     }
-    public void RenderPlayers(){
+    public void renderPlayers(){
         playerPane.image = new BufferedImage(game.getBoardWidth()*scale, game.getBoardHeight()*scale, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = playerPane.image.createGraphics();
-        graphics.drawImage(playerTexture,null , game.getPlayerOne().getLocation().getX()*scale, game.getPlayerOne().getLocation().getY()*scale);
-        graphics.drawImage(AITexture,null , game.getPlayerTwo().getLocation().getX()*scale, game.getPlayerTwo().getLocation().getY()*scale);
+        if(game.getPlayerOne() != null)
+            graphics.drawImage(playerTexture,null , game.getPlayerOne().getLocation().getX()*scale, game.getPlayerOne().getLocation().getY()*scale);
+        if(game.getPlayerTwo() != null)
+            graphics.drawImage(AITexture,null , game.getPlayerTwo().getLocation().getX()*scale, game.getPlayerTwo().getLocation().getY()*scale);
     }
     public Game getGame(){
         return this.game;
@@ -155,6 +159,8 @@ public class GameRenderer extends JFrame implements KeyListener{
     public void keyTyped(KeyEvent e) {}
     @Override
     public void keyPressed(KeyEvent e){
+        if(game.getPlayerOne() == null)
+            return;
         int keyCode = e.getKeyCode();
         if(keyCode == 38 || keyCode == 87)
             game.moveHumanPlayer(Direction.NORTH);
@@ -164,7 +170,7 @@ public class GameRenderer extends JFrame implements KeyListener{
             game.moveHumanPlayer(Direction.EAST);
         if(keyCode == 37 || keyCode == 65)
             game.moveHumanPlayer(Direction.WEST);
-        RenderPlayers();
+        renderPlayers();
         repaint();
     }
 

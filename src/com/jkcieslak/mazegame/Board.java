@@ -144,7 +144,6 @@ public class Board {
             }
         }
         generateField();
-        System.out.println("Attempted field regeneration.");
     }
     public void drawInConsole(){
         for(int i = 0; i < height; ++i) {

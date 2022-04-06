@@ -3,8 +3,6 @@ package com.jkcieslak.mazegame;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 public class Menu extends JFrame implements ActionListener {
     GameSettings gameSettings;
@@ -39,12 +37,16 @@ public class Menu extends JFrame implements ActionListener {
 
         widthSpinner = new JSpinner(new SpinnerNumberModel(30, 6, 59, 1));
         widthSpinner.setBounds(145, 40, 80, 20);
+        if((gameSettings.getWidth() >= 6) && (gameSettings.getWidth()<=60))
+            widthSpinner.setValue(gameSettings.getWidth());
 
         heightLabel = new JLabel("Height:", SwingConstants.RIGHT);
         heightLabel.setBounds( 55, 70, 80, 20);
 
         heightSpinner = new JSpinner(new SpinnerNumberModel(15, 6, 30, 1));
         heightSpinner.setBounds(145, 70, 80, 20);
+        if((gameSettings.getHeight() >= 6) && (gameSettings.getHeight() <= 30))
+            heightSpinner.setValue(gameSettings.getHeight());
 
         seedLabel = new JLabel("Seed:", SwingConstants.RIGHT);
         seedLabel.setBounds( 55, 100, 80, 20);
@@ -52,6 +54,18 @@ public class Menu extends JFrame implements ActionListener {
 
         seedSpinner = new JSpinner(new SpinnerNumberModel());
         seedSpinner.setBounds(145, 100, 80, 20);
+        seedSpinner.setValue(gameSettings.getSeed());
+
+        difficultyLabel = new JLabel("AI Difficulty:", SwingConstants.RIGHT);
+        difficultyLabel.setBounds( 55, 160, 80, 20);
+
+        difficultyJComboBox = new JComboBox<>(Difficulty.values());
+        difficultyJComboBox.setBounds(145, 160, 80, 20);
+        difficultyJComboBox.setVisible(false);
+        if(gameSettings.getDifficulty() != null)
+            difficultyJComboBox.setSelectedItem(gameSettings.getDifficulty());
+        else
+            difficultyJComboBox.setSelectedItem(Difficulty.MEDIUM);
 
         gametypeLabel = new JLabel("Gametype:", SwingConstants.RIGHT);
         gametypeLabel.setBounds( 55, 130, 80, 20);
@@ -60,19 +74,18 @@ public class Menu extends JFrame implements ActionListener {
         gametypeJComboBox.setBounds(145, 130, 80, 20);
         gametypeJComboBox.addActionListener(this);
         gametypeJComboBox.setActionCommand("changeGameType");
-
-        difficultyLabel = new JLabel("AI Difficulty:", SwingConstants.RIGHT);
-        difficultyLabel.setBounds( 55, 160, 80, 20);
-
-        difficultyJComboBox = new JComboBox<>(Difficulty.values());
-        difficultyJComboBox.setBounds(145, 160, 80, 20);
-        difficultyJComboBox.setVisible(false);
+        if(gameSettings.getGametype() != null)
+            gametypeJComboBox.setSelectedItem(gameSettings.getGametype());
+        else
+            gametypeJComboBox.setSelectedItem(Gametype.VS_AI);
 
         playerNameLabel = new JLabel("Player name:", SwingConstants.RIGHT);
         playerNameLabel.setBounds( 55, 190, 80, 20);
 
         playerNameField = new JTextField();
         playerNameField.setBounds(145, 190, 80, 20);
+        if(gameSettings.getPlayerName() != null)
+            playerNameField.setText(gameSettings.getPlayerName());
 
         playButton = new JButton();
         playButton.setBounds(120, 220, 100, 30);

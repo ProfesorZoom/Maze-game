@@ -31,6 +31,10 @@ public class Game {
             }
         }
     }
+    public Game(GameSettings gameSettings){
+        this(gameSettings.getWidth(), gameSettings.getHeight(), gameSettings.getSeed(), gameSettings.getGametype(),
+                gameSettings.getPlayerName());
+    }
     public void moveHumanPlayer(Direction direction){
         if(playerOne != null)
             playerOne.move(direction);
