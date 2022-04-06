@@ -1,20 +1,43 @@
 package com.jkcieslak.mazegame;
 
 public class Game {
-    private final HumanPlayer playerOne;
-    private final AIPlayer playerTwo;
-    private final Board board;
+    private HumanPlayer playerOne;
+    private AIPlayer playerTwo;
+    private Board board;
+    private final int boardWidth;
+    private final int boardHeight;
+    private PathTree pathTree;
+    //private boolean isCompleted;
 
-    public Game(int width, int height, int seed){
+    public Game(int width, int height, int seed, Gametype gametype, String playerName){
+        boardWidth = width;
+        boardHeight = height;
         board = new Board(width, height, seed);
-        playerOne = new HumanPlayer("Kevin", board);
-        playerTwo = new AIPlayer(board);
+        pathTree = new PathTree(board);
+        while(pathTree.getExitPath().getLast().getDepthLevel() < width+height){
+            board.regenerateField();
+            pathTree = new PathTree(board);
+        }
+        switch (gametype){
+            case SOLO ->{
+                playerOne = new HumanPlayer(playerName, board);
+                playerTwo = null;
+            }case VS_AI -> {
+                playerOne = new HumanPlayer(playerName, board);
+                playerTwo = new AIPlayer(board, pathTree);
+            }case AI_ONLY -> {
+                playerOne = null;
+                playerTwo = new AIPlayer(board, pathTree);
+            }
+        }
     }
-    public void movePlayer(Direction direction){
-        playerOne.move(direction);
+    public void moveHumanPlayer(Direction direction){
+        if(playerOne != null)
+            playerOne.move(direction);
     }
-    public void movePlayer(){
-        playerTwo.move();
+    public void moveAIPlayer(){
+        if(playerTwo != null)
+            playerTwo.move();
     }
     public Board getBoard(){
         return board;
@@ -25,4 +48,6 @@ public class Game {
     public Player getPlayerTwo(){
         return playerTwo;
     }
+    public int getBoardWidth(){return boardWidth;}
+    public int getBoardHeight(){return boardHeight;}
 }

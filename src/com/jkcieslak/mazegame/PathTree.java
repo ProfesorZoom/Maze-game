@@ -14,7 +14,8 @@ public class PathTree {
         this.board = board;
         root = new TreeNode(this.board.getEntrance());
         this.exitPath = new ArrayDeque<>();
-        addTreeNodeChildren(root);
+        this.addTreeNodeChildren(root);
+        this.constructExitPath();
     }
     public static class TreeNode {
         private Cell cell;

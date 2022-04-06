@@ -1,33 +1,57 @@
 package com.jkcieslak.mazegame;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 
 public class GameRenderer extends JFrame implements KeyListener{
     private final Game game;
-    private final int scale;
+    private final int scale = 32;
     private final Color playerOneColor;
     private final Color playerTwoColor;
+    private BufferedImage playerTexture;
+    private BufferedImage AITexture;
     private final PlayerPane playerPane;
 
     class BackgroundPanel extends JComponent{
         private final BufferedImage image;
 
         public BackgroundPanel(){
-            this.image = new BufferedImage(game.getBoard().getWidth()*scale, game.getBoard().getHeight()*scale, BufferedImage.TYPE_INT_ARGB);
+            this.image = new BufferedImage(game.getBoardWidth()*scale, game.getBoardHeight()*scale, BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics = image.createGraphics();
-            graphics.setColor(Color.BLACK);
+            //loading wall textures
+            BufferedImage brickTexture = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
+            brickTexture = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D brickTextureGraphics = brickTexture.createGraphics();
+            try {
+                BufferedImage loadedTexture = ImageIO.read(new File("src\\com\\jkcieslak\\mazegame\\bricks.png"));
+                Graphics2D loadedTextureGraphics = loadedTexture.createGraphics();
+                brickTextureGraphics.drawImage(loadedTexture.getScaledInstance(32, 32, Image.SCALE_DEFAULT), null, null);
+            } catch (IOException e){
+                System.out.println("Error loading wall texture!");
+                brickTextureGraphics.setColor(Color.BLACK);
+                brickTextureGraphics.fillRect(0, 0, scale, scale);
+            }
             for (Cell[] cellRow : game.getBoard().getField()) {
                 for(Cell cell : cellRow){
                     if(cell.isWall()) {
+                        graphics.drawImage(brickTexture, null, cell.getX()*scale, cell.getY()*scale);
+                        continue;
+                    }
+                    if(cell == game.getBoard().getExit()){
+                        graphics.setColor(new Color(192, 192, 192, 255));
                         graphics.fillRect(cell.getX()*scale, cell.getY()*scale, scale, scale);
-
+                        graphics.setColor(Color.BLACK);
+                        graphics.drawString("EXIT", cell.getX()*scale + 4, cell.getY()*scale + scale/2 + 4);
+                        graphics.drawString("EXIT", cell.getX()*scale + 4, cell.getY()*scale + scale/2 + 5);
+                        graphics.drawString("EXIT", cell.getX()*scale + 3, cell.getY()*scale + scale/2 + 4);
                     }
                 }
             }
-
         }
         @Override
         protected void paintComponent(Graphics g) {
@@ -37,14 +61,16 @@ public class GameRenderer extends JFrame implements KeyListener{
     }
     class PlayerPane extends JComponent{
         private BufferedImage image;
+        private BufferedImage playerTexture;
+        private BufferedImage AITexture;
 
-        public PlayerPane(){
-            this.image = new BufferedImage(game.getBoard().getWidth()*scale, game.getBoard().getHeight()*scale, BufferedImage.TYPE_INT_ARGB);
+        public PlayerPane(BufferedImage playerTexture, BufferedImage AITexture){
+            this.image = new BufferedImage(game.getBoardWidth()*scale, game.getBoardHeight()*scale, BufferedImage.TYPE_INT_ARGB);
+            this.playerTexture = playerTexture;
+            this.AITexture = AITexture;
             Graphics2D graphics = image.createGraphics();
-            graphics.setColor(playerOneColor);
-            graphics.fillOval(game.getPlayerOne().getLocation().getX()*scale, game.getPlayerOne().getLocation().getY()*scale, scale, scale);
-            graphics.setColor(playerTwoColor);
-            graphics.fillOval(game.getPlayerTwo().getLocation().getX()*scale, game.getPlayerTwo().getLocation().getY()*scale, scale, scale);
+            graphics.drawImage(playerTexture, null, game.getPlayerOne().getLocation().getX()*scale,game.getPlayerOne().getLocation().getY()*scale );
+            graphics.drawImage(AITexture, null, game.getPlayerTwo().getLocation().getX()*scale,game.getPlayerTwo().getLocation().getY()*scale );
         }
         @Override
         protected void paintComponent(Graphics g){
@@ -55,68 +81,93 @@ public class GameRenderer extends JFrame implements KeyListener{
     public GameRenderer(Game game, int scale){
         super("Maze game");
         this.game = game;
-        this.scale = scale;
+        //this.scale = scale;
 
-        setSize(game.getBoard().getWidth()*scale+scale-4,
-                game.getBoard().getHeight()*scale+scale+scale-1);
-        //setResizable(false);
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu = new JMenu("File");
+        menuBar.add(menu);
+        setJMenuBar(menuBar);
+
+        setResizable(false);
+        setVisible(true);
+        setSize(game.getBoardWidth()*scale+getInsets().left+getInsets().right,
+                game.getBoardHeight()*scale+getInsets().top+getInsets().bottom + menuBar.getHeight());
         playerOneColor = new Color(0, 255, 0, 128);
         playerTwoColor = new Color(255, 0, 0, 128);
         Color gray = new Color(128, 128, 128);
         setBackground(gray);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //setContentPane(new BackgroundPanel());
 
         JLayeredPane jLayeredPane = new JLayeredPane();
-        jLayeredPane.setSize(game.getBoard().getWidth()*scale,game.getBoard().getHeight()*scale);
+        jLayeredPane.setBounds(0, 0, game.getBoardWidth()*scale,game.getBoardHeight()*scale + menuBar.getHeight());
         jLayeredPane.setVisible(true);
 
         BackgroundPanel backgroundPanel = new BackgroundPanel();
-        backgroundPanel.setBounds(0, 0, game.getBoard().getWidth()*scale, game.getBoard().getHeight()*scale);
+        backgroundPanel.setBounds(0, menuBar.getHeight(), game.getBoardWidth()*scale, game.getBoardHeight()*scale + menuBar.getHeight());
         jLayeredPane.add(backgroundPanel, 0);
 
-        playerPane = new PlayerPane();
-        playerPane.setBounds(0, 0, game.getBoard().getWidth()*scale, game.getBoard().getHeight()*scale);
+        try {
+            playerTexture = ImageIO.read(new File("src\\com\\jkcieslak\\mazegame\\balloon.png"));
+        } catch (IOException e){
+            System.out.println("Error loading player texture!");
+            playerTexture = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D playerTextureGraphics = playerTexture.createGraphics();
+            playerTextureGraphics.setColor(playerOneColor);
+            playerTextureGraphics.fillOval(0, 0, scale, scale);
+        }
+        try {
+            AITexture = ImageIO.read(new File("src\\com\\jkcieslak\\mazegame\\aibot.png"));
+        } catch (IOException e){
+            System.out.println("Error loading AI texture!");
+            AITexture = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D AITextureGraphics = AITexture.createGraphics();
+            AITextureGraphics.setColor(playerTwoColor);
+            AITextureGraphics.fillOval(0, 0, scale, scale);
+        }
+
+        playerPane = new PlayerPane(playerTexture, AITexture);
+        playerPane.setBounds(0, menuBar.getHeight(), game.getBoardWidth()*scale, game.getBoardHeight()*scale + menuBar.getHeight());
         jLayeredPane.add(playerPane, 1);
 
-        setContentPane(jLayeredPane);
-        setVisible(true);
+        rootPane.setLayeredPane(jLayeredPane);
+        //setContentPane(jLayeredPane);
+        setJMenuBar(menuBar);
         setFocusable(true);
+
         addKeyListener(this);
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                super.componentResized(e);
+            }
+        });
     }
     public void RenderPlayers(){
-        playerPane.image = new BufferedImage(game.getBoard().getWidth()*scale, game.getBoard().getHeight()*scale, BufferedImage.TYPE_INT_ARGB);
+        playerPane.image = new BufferedImage(game.getBoardWidth()*scale, game.getBoardHeight()*scale, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = playerPane.image.createGraphics();
-        graphics.setColor(playerOneColor);
-        graphics.fillOval(game.getPlayerOne().getLocation().getX()*scale, game.getPlayerOne().getLocation().getY()*scale, scale, scale);
-        graphics.setColor(playerTwoColor);
-        graphics.fillOval(game.getPlayerTwo().getLocation().getX()*scale, game.getPlayerTwo().getLocation().getY()*scale, scale, scale);
+        graphics.drawImage(playerTexture,null , game.getPlayerOne().getLocation().getX()*scale, game.getPlayerOne().getLocation().getY()*scale);
+        graphics.drawImage(AITexture,null , game.getPlayerTwo().getLocation().getX()*scale, game.getPlayerTwo().getLocation().getY()*scale);
     }
     public Game getGame(){
         return this.game;
     }
     @Override
-    public void keyTyped(KeyEvent e) {
-        System.out.println("keyTyped");
-    }
+    public void keyTyped(KeyEvent e) {}
     @Override
     public void keyPressed(KeyEvent e){
         int keyCode = e.getKeyCode();
         if(keyCode == 38 || keyCode == 87)
-            game.movePlayer(Direction.NORTH);
+            game.moveHumanPlayer(Direction.NORTH);
         if(keyCode == 40 || keyCode == 83)
-            game.movePlayer(Direction.SOUTH);
+            game.moveHumanPlayer(Direction.SOUTH);
         if(keyCode == 39 || keyCode == 68)
-            game.movePlayer(Direction.EAST);
+            game.moveHumanPlayer(Direction.EAST);
         if(keyCode == 37 || keyCode == 65)
-            game.movePlayer(Direction.WEST);
-        System.out.println("Key Pressed: "+ keyCode);
+            game.moveHumanPlayer(Direction.WEST);
         RenderPlayers();
         repaint();
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-        System.out.println("keyReleased");
-    }
+    public void keyReleased(KeyEvent e) {}
 }

@@ -132,7 +132,20 @@ public class Board {
         exit = temp_cell;
         exit.setWallState(false);
     }
-
+    public void regenerateField(){
+        this.field = new Cell[height][width];
+        for(int i = 0; i < height; ++i) {   //filling the board with walls while marking outer walls
+            for (int j = 0; j < width; ++j) {
+                if (areBorderCoordinates(j, i)) {
+                    field[i][j] = new Cell(j, i, true, true);
+                }else{
+                    field[i][j] = new Cell(j, i, true, false);
+                }
+            }
+        }
+        generateField();
+        System.out.println("Attempted field regeneration.");
+    }
     public void drawInConsole(){
         for(int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
