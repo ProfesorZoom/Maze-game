@@ -10,12 +10,19 @@ public class Player {
         this.board = board;
         this.location = board.getEntrance();
     }
-    public void move(){return;}
-    public void move(Direction direction){return;}
+    public void move(){}
+    public void move(Direction direction){}
     public String getName() {
         return name;
     }
     public Cell getLocation() {
         return location;
     }
+    public PlayerType getPlayerType(){ return null; }
+
+    public enum PlayerType{
+        AI,
+        HUMAN
+    }
 }
+

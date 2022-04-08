@@ -113,7 +113,7 @@ public class Board {
         //Main algorithm maze generation loop
         while(!wall_list.isEmpty()){
             temp_cell = wall_list.get(rand.nextInt(wall_list.size()));
-            if(checkDirectNeighbors(temp_cell) == 1){
+            if(checkCardinalNeighbors(temp_cell) == 1){
                 temp_cell.setWallState(false);
                 temp_cell.setFinalState(true);
                 addNeighborsToWallList(temp_cell, wall_list);
@@ -123,12 +123,12 @@ public class Board {
         //Adding entrance and exit
         do{
             temp_cell = chooseExit();
-        }while(checkDirectNeighbors(temp_cell) != 1);
+        }while(checkCardinalNeighbors(temp_cell) != 1);
         entrance = temp_cell;
         entrance.setWallState(false);
         do{
             temp_cell = chooseExit();
-        }while((checkDirectNeighbors(temp_cell) != 1) || (temp_cell == entrance));
+        }while((checkCardinalNeighbors(temp_cell) != 1) || (temp_cell == entrance));
         exit = temp_cell;
         exit.setWallState(false);
     }
@@ -162,17 +162,11 @@ public class Board {
      * Return type is int
      * @return int, Number of empty cells in neighborhood
      */
-    public int checkDirectNeighbors(Cell cell){
+    public int checkCardinalNeighbors(Cell cell){
         int dir_counter, x, y;
         dir_counter = 0;
         x = cell.getX();
         y = cell.getY();
-        /*
-        if(isBorderCell(cell)){
-            return -1;
-        }
-
-         */
         if(!getCellWallState(x-1,y)) //West Neighbor
             dir_counter++;
         if(!getCellWallState(x+1,y)) //East Neighbor

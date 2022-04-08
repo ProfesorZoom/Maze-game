@@ -10,4 +10,7 @@ public class AIPlayer extends Player{
     public void move(){
         location = pathTree.getExitPath().pop().getCell();
     }
+    public PlayerType getPlayerType(){
+        return PlayerType.AI;
+    }
 }

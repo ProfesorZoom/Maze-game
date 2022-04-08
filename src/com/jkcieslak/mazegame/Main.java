@@ -10,7 +10,7 @@ public class Main {
         Random temp_rand = new Random();
         GameSettings gameSettings = new GameSettings();
         //Main program loop
-        while(true){
+        while(!gameSettings.isExiting()){
             //Settings menu
             Menu menu = new Menu(gameSettings);
             while(!gameSettings.areChosen()){
@@ -21,36 +21,37 @@ public class Main {
                 }
             }
             menu.dispose();
+            //Game setup
             if(gameSettings.getSeed() == 0)
                 gameSettings.setSeed(temp_rand.nextInt());
-            //Game setup and main loop
             Game game = new Game(gameSettings);
-            GameRenderer gameRenderer = new GameRenderer(game, 32);
+            GameRenderer gameRenderer = new GameRenderer(game);
             SharedAIObject SAIO = new SharedAIObject();
             AIHandling aiHandling = new AIHandling(SAIO, gameSettings.getDifficulty());
             aiHandling.start();
-            boolean playerWon;
-            while(true){
+            boolean playerOneWon = false;
+            boolean isGameFinished = false;
+            //Main game loop
+            while(!isGameFinished){
+                //move AI player when handler allows it
                 if(SAIO.readMove()) {
                     game.moveAIPlayer();
                     gameRenderer.renderPlayers();
                     gameRenderer.repaint();
                     SAIO.setMove(false);
                 }
+                //checking whether a player or AI found the exit
                 if(game.getPlayerOne() != null && game.getPlayerOne().location == game.getBoard().getExit()){
-                    gameRenderer.repaint();
                     SAIO.doStop();
-                    playerWon = true;
-                    break;
+                    playerOneWon = true;
+                    isGameFinished = true;
                 }else if(game.getPlayerTwo()!= null && game.getPlayerTwo().location == game.getBoard().getExit()) {
-                    gameRenderer.repaint();
                     SAIO.doStop();
-                    playerWon = false;
-                    break;
+                    isGameFinished = true;
                 }
             }
             //Post game box
-            FinishBox finishBox = new FinishBox(gameSettings, playerWon);
+            FinishBox finishBox = new FinishBox(gameSettings, playerOneWon);
             while(gameSettings.areChosen()){
                 try{
                     Thread.sleep(50);
@@ -60,7 +61,6 @@ public class Main {
             }
             gameRenderer.dispose();
             finishBox.dispose();
-            aiHandling = null;
         }
     }
 }

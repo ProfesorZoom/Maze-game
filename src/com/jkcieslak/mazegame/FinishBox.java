@@ -22,18 +22,19 @@ public class FinishBox extends JFrame implements ActionListener {
         resultLabel = new JLabel();
         resultLabel.setBounds(0, 10, 320, 20);
         switch (gameSettings.getGametype()){
-            case SOLO ->{
-                resultLabel.setText("Congratulations, you've found the exit!");
-            }
-            case AI_ONLY -> {
-                resultLabel.setText("The AI simulation has completed.");
-            }
+            case SOLO -> resultLabel.setText("Congratulations, you've found the exit!");
+            case AI_ONLY -> resultLabel.setText("The AI simulation has completed.");
             case VS_AI -> {
-                if(playerWon){
+                if(playerWon)
                     resultLabel.setText("Congratulations, you've won!");
-                }else{
+                else
                     resultLabel.setText("You lost. Better luck next time!");
-                }
+            }
+            case PVP -> {
+                if(playerWon)
+                    resultLabel.setText("Player one has won.");
+                else
+                    resultLabel.setText("Player two has won.");
             }
         }
         resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -61,7 +62,8 @@ public class FinishBox extends JFrame implements ActionListener {
             gameSettings.setChosen(false);
         }
         if("exit".equals(e.getActionCommand())){
-            System.exit(0);
+            gameSettings.setChosen(false);
+            gameSettings.setExiting(true);
         }
     }
 }
