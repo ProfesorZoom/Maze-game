@@ -26,30 +26,16 @@ public class Main {
                 gameSettings.setSeed(temp_rand.nextInt());
             Game game = new Game(gameSettings);
             GameRenderer gameRenderer = new GameRenderer(game);
-            SharedAIObject SAIO = new SharedAIObject();
-            AIHandling aiHandling = new AIHandling(SAIO, gameSettings.getDifficulty());
-            aiHandling.start();
-            boolean playerOneWon = false;
-            boolean isGameFinished = false;
-            //Main game loop
-            while(!isGameFinished){
-                //move AI player when handler allows it
-                if(SAIO.readMove()) {
-                    game.moveAIPlayer();
-                    gameRenderer.renderPlayers();
-                    gameRenderer.repaint();
-                    SAIO.setMove(false);
-                }
-                //checking whether a player or AI found the exit
-                if(game.getPlayerOne() != null && game.getPlayerOne().location == game.getBoard().getExit()){
-                    SAIO.doStop();
-                    playerOneWon = true;
-                    isGameFinished = true;
-                }else if(game.getPlayerTwo()!= null && game.getPlayerTwo().location == game.getBoard().getExit()) {
-                    SAIO.doStop();
-                    isGameFinished = true;
-                }
+            game.setGameRenderer(gameRenderer);
+            Thread gameThread = new Thread(game, "AI Thread");
+            //Starting game control thread and waiting for it to finish working
+            gameThread.start();
+            try{
+                gameThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            boolean playerOneWon = game.getWinner() == game.getPlayerOne();
             //Post game box
             FinishBox finishBox = new FinishBox(gameSettings, playerOneWon);
             while(gameSettings.areChosen()){

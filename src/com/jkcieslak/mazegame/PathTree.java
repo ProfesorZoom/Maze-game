@@ -85,6 +85,11 @@ public class PathTree {
     void constructExitPath(){
         traverse(root);
     }
+    void reconstructExitPath(){
+        exitPath.clear();
+        isExitPathConstructed = false;
+        traverse(root);
+    }
     void traverse(TreeNode node){
         if(isExitPathConstructed)
             return;

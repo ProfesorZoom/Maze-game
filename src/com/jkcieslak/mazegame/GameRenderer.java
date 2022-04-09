@@ -8,14 +8,23 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 
-public class GameRenderer extends JFrame implements KeyListener{
+public class GameRenderer extends JFrame implements KeyListener, ActionListener {
     private final Game game;
     private final int scale;
     private final BufferedImage playerTexture;
     private final BufferedImage AITexture;
     private final PlayerPane playerPane;
 
-    class BackgroundPanel extends JComponent{
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if ("forceEnd".equals(e.getActionCommand()))
+            game.forceEnd();
+        if("restartGame".equals(e.getActionCommand())){
+            game.resetPlayers();
+        }
+    }
+
+    private class BackgroundPanel extends JComponent{
         private final BufferedImage image;
 
         public BackgroundPanel(){
@@ -24,7 +33,7 @@ public class GameRenderer extends JFrame implements KeyListener{
             //loading and scaling wall texture
             BufferedImage brickTexture = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
             Graphics2D brickTextureGraphics = brickTexture.createGraphics();
-            BufferedImage loadedBrickTexture = loadTexture("src\\com\\jkcieslak\\mazegame\\bricks.png");
+            BufferedImage loadedBrickTexture = loadTexture("bricks.png");
             brickTextureGraphics.drawImage(loadedBrickTexture.getScaledInstance(scale, scale, Image.SCALE_DEFAULT), null, null);
             //painting walls
             for (Cell[] cellRow : game.getBoard().getField()) {
@@ -48,7 +57,7 @@ public class GameRenderer extends JFrame implements KeyListener{
             g.drawImage(image, 0, 0 ,this);
         }
     }
-    class PlayerPane extends JComponent{
+    private class PlayerPane extends JComponent{
         private BufferedImage image;
 
         public PlayerPane(BufferedImage playerTexture, BufferedImage AITexture){
@@ -72,6 +81,15 @@ public class GameRenderer extends JFrame implements KeyListener{
 
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
+        JMenuItem forceEndMenuItem = new JMenuItem("Force end");
+        forceEndMenuItem.addActionListener(this);
+        forceEndMenuItem.setActionCommand("forceEnd");
+        JMenuItem restartGameMenuItem = new JMenuItem("Restart game");
+        restartGameMenuItem.addActionListener(this);
+        restartGameMenuItem.setActionCommand("restartGame");
+
+        menu.add(forceEndMenuItem);
+        menu.add(restartGameMenuItem);
         menuBar.add(menu);
         setJMenuBar(menuBar);
 
@@ -91,8 +109,8 @@ public class GameRenderer extends JFrame implements KeyListener{
         backgroundPanel.setBounds(0, menuBar.getHeight(), game.getBoardWidth()*scale, game.getBoardHeight()*scale + menuBar.getHeight());
         jLayeredPane.add(backgroundPanel, 1);
 
-        playerTexture = loadTexture("src\\com\\jkcieslak\\mazegame\\balloon.png");
-        AITexture = loadTexture("src\\com\\jkcieslak\\mazegame\\aibot.png");
+        playerTexture = loadTexture("balloon.png");
+        AITexture = loadTexture("aibot.png");
 
         playerPane = new PlayerPane(playerTexture, AITexture);
         playerPane.setBounds(0, menuBar.getHeight(), game.getBoardWidth()*scale, game.getBoardHeight()*scale + menuBar.getHeight());
@@ -146,10 +164,12 @@ public class GameRenderer extends JFrame implements KeyListener{
             return;
         int keyCode = e.getKeyCode();
         switch (keyCode){
+            //Arrow keys
             case 37 -> game.moveHumanPlayerOne(Direction.WEST);
             case 38 -> game.moveHumanPlayerOne(Direction.NORTH);
             case 39 -> game.moveHumanPlayerOne(Direction.EAST);
             case 40 -> game.moveHumanPlayerOne(Direction.SOUTH);
+            //WASD keys
             case 65 -> game.moveHumanPlayerTwo(Direction.WEST);
             case 68 -> game.moveHumanPlayerTwo(Direction.EAST);
             case 83 -> game.moveHumanPlayerTwo(Direction.SOUTH);

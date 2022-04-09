@@ -1,8 +1,10 @@
 package com.jkcieslak.mazegame;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class FinishBox extends JFrame implements ActionListener {
     GameSettings gameSettings;
@@ -15,13 +17,13 @@ public class FinishBox extends JFrame implements ActionListener {
         super();
         this.gameSettings = gameSettings;
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(330, 130);
+        setSize(355, 130);
         setLayout(null);
         setResizable(false);
 
         resultLabel = new JLabel();
         resultLabel.setBounds(0, 10, 320, 20);
-        switch (gameSettings.getGametype()){
+        switch (gameSettings.getGamemode()){
             case SOLO -> resultLabel.setText("Congratulations, you've found the exit!");
             case AI_ONLY -> resultLabel.setText("The AI simulation has completed.");
             case VS_AI -> {
@@ -38,19 +40,24 @@ public class FinishBox extends JFrame implements ActionListener {
             }
         }
         resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(resultLabel);
 
         newGameButton = new JButton("New game");
-        newGameButton.setBounds(10, 50, 140, 30);
+        newGameButton.setBounds(10, 50, 100, 30);
         newGameButton.addActionListener(this);
         newGameButton.setActionCommand("newGame");
+        add(newGameButton);
+
+        leaderboardButton = new JButton("Leaderboards");
+        leaderboardButton.setBounds(120, 50, 100, 30);
+        leaderboardButton.addActionListener(this);
+        leaderboardButton.setActionCommand("showLeaderboard");
+        add(leaderboardButton);
 
         exitButton = new JButton("Exit");
-        exitButton.setBounds(170, 50, 140, 30);
+        exitButton.setBounds(230, 50, 100, 30);
         exitButton.addActionListener(this);
         exitButton.setActionCommand("exit");
-
-        add(resultLabel);
-        add(newGameButton);
         add(exitButton);
 
         setVisible(true);
@@ -64,6 +71,21 @@ public class FinishBox extends JFrame implements ActionListener {
         if("exit".equals(e.getActionCommand())){
             gameSettings.setChosen(false);
             gameSettings.setExiting(true);
+        }
+        if("showLeaderboard".equals(e.getActionCommand())){
+            try {
+                LeaderboardBox leaderboardBox = new LeaderboardBox();
+            } catch (IOException ex) {
+                JFrame popup = new JFrame();
+                JPanel panel = new JPanel(new GridLayout(2,1));
+                panel.add(new JLabel("No leaderboard records found."));
+                JButton button = new JButton("OK");
+                button.addActionListener(evt -> popup.dispose());
+                panel.add(button);
+                popup.add(panel);
+                popup.pack();
+                popup.setVisible(true);
+            }
         }
     }
 }

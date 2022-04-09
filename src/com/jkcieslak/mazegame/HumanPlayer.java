@@ -5,6 +5,7 @@ public class HumanPlayer extends Player {
     public HumanPlayer(String name, Board board){
         super(name, board);
     }
+    @Override
     public void move(Direction direction){
         int xDiff, yDiff;
         switch (direction) {
@@ -31,8 +32,5 @@ public class HumanPlayer extends Player {
         }
         if(!board.getCellWallState(location.getX()+xDiff, location.getY()+yDiff))
             location = board.getCell(location.getX()+xDiff, location.getY()+yDiff);
-    }
-    public PlayerType getPlayerType(){
-        return PlayerType.HUMAN;
     }
 }

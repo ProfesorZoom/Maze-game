@@ -1,76 +1,158 @@
 package com.jkcieslak.mazegame;
 
-public class Game {
+import java.io.IOException;
+import java.time.*;
+
+public class Game implements Runnable {
     private Player playerOne;
     private Player playerTwo;
     private final Board board;
     private final int boardWidth;
     private final int boardHeight;
+    private final int boardSeed;
     private PathTree pathTree;
-    private final Gametype gametype;
-    //private boolean isCompleted;
+    private final Gamemode gamemode;
+    private final Difficulty difficulty;
+    private boolean forceCompleted;
+    private Player winner;
+    private GameRenderer gameRenderer;
 
-    public Game(int width, int height, int seed, Gametype gametype, String playerName){
+    public Game(int width, int height, int seed, Gamemode gamemode, Difficulty difficulty, String playerOneName, String playerTwoName){
+        forceCompleted = false;
         boardWidth = width;
         boardHeight = height;
-        this.gametype = gametype;
+        boardSeed = seed;
+        this.gamemode = gamemode;
+        this.difficulty = difficulty;
         board = new Board(width, height, seed);
         pathTree = new PathTree(board);
         while(pathTree.getExitPath().getLast().getDepthLevel() < width+height){
             board.regenerateField();
             pathTree = new PathTree(board);
         }
-        switch (gametype){
+        switch (gamemode){
             case SOLO ->{
-                playerOne = new HumanPlayer(playerName, board);
+                playerOne = new HumanPlayer(playerOneName, board);
                 playerTwo = null;
             }case VS_AI -> {
-                playerOne = new HumanPlayer(playerName, board);
+                playerOne = new HumanPlayer(playerOneName, board);
                 playerTwo = new AIPlayer(board, pathTree);
             }case AI_ONLY -> {
                 playerOne = null;
                 playerTwo = new AIPlayer(board, pathTree);
             }case PVP ->{
-                playerOne = new HumanPlayer(playerName, board);
-                playerTwo = new HumanPlayer(playerName, board);
+                playerOne = new HumanPlayer(playerOneName, board);
+                playerTwo = new HumanPlayer(playerTwoName, board);
             }
         }
     }
     public Game(GameSettings gameSettings){
-        this(gameSettings.getWidth(), gameSettings.getHeight(), gameSettings.getSeed(), gameSettings.getGametype(),
-                gameSettings.getPlayerName());
+        this(gameSettings.getWidth(), gameSettings.getHeight(), gameSettings.getSeed(), gameSettings.getGamemode(),
+                gameSettings.getDifficulty(), gameSettings.getPlayerOneName(), gameSettings.getPlayerTwoName());
     }
     public void moveHumanPlayerOne(Direction direction){
-        if(gametype != Gametype.AI_ONLY)
+        if(gamemode != Gamemode.AI_ONLY)
             playerOne.move(direction);
     }
     public void moveHumanPlayerTwo(Direction direction){
-        if(gametype == Gametype.PVP)
+        if(gamemode == Gamemode.PVP)
             playerTwo.move(direction);
         else
             moveHumanPlayerOne(direction);
     }
-
+    public void forceEnd(){
+        forceCompleted = true;
+    }
 
     public void moveAIPlayer(){
-        if(gametype == Gametype.VS_AI || gametype == Gametype.AI_ONLY)
+        if(playerTwo instanceof AIPlayer)
             playerTwo.move();
     }
-    public Board getBoard(){
+    synchronized public Board getBoard(){
         return board;
     }
-    public Player getPlayerOne(){
+    synchronized public Player getPlayerOne(){
         return playerOne;
     }
-    public Player getPlayerTwo(){
+    synchronized public Player getPlayerTwo(){
         return playerTwo;
     }
-    public int getBoardWidth(){return boardWidth;}
-    public int getBoardHeight(){return boardHeight;}
+    synchronized public int getBoardWidth(){return boardWidth;}
+    synchronized public int getBoardHeight(){return boardHeight;}
+    public int getBoardSeed() {
+        return boardSeed;
+    }
     public Cell getEntranceCell(){
         return board.getEntrance();
     }
-    public Cell getExitCell(){
+    synchronized public Cell getExitCell(){
         return board.getExit();
     }
+    public int getAIDelay(){
+        int delay;
+        switch (difficulty){
+            case EASY -> delay = 600;
+            case MEDIUM -> delay = 400;
+            case HARD -> delay = 200;
+            default -> delay = 1000;
+        }
+        return delay;
+    }
+    public boolean isForceCompleted() {
+        return forceCompleted;
+    }
+    public void resetPlayers(){
+        playerOne.setLocation(getEntranceCell());
+        playerTwo.setLocation(getEntranceCell());
+        resetAIExitPath();
+    }
+    public void resetAIExitPath(){
+        pathTree.reconstructExitPath();
+    }
+
+    public Player getWinner() {
+        return winner;
+    }
+
+    @Override
+    public void run(){
+        Instant startInstantTime = Instant.now();
+        int delay = getAIDelay();
+        boolean keeplooping;
+        do{
+            moveAIPlayer();
+            gameRenderer.renderPlayers();
+            gameRenderer.repaint();
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            keeplooping = !forceCompleted;
+            if(getPlayerOne() != null && getPlayerOne().getLocation() == getExitCell()) {
+                keeplooping = false;
+                winner = playerOne;
+            }
+            if(getPlayerTwo() != null && getPlayerTwo().getLocation() == getExitCell()) {
+                keeplooping = false;
+                winner = playerTwo;
+            }
+        }while(keeplooping);
+        Instant endInstantTime = Instant.now();
+        Duration gameDuration = Duration.between(startInstantTime, endInstantTime);
+        if(winner instanceof HumanPlayer && !forceCompleted) {
+            try {
+                LeaderboardRecord.writeRecordToFile("leaderboard.csv", new LeaderboardRecord(
+                        playerOne.getName(), gameDuration, getBoardWidth(), getBoardHeight(), getBoardSeed()), ";");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    public void setGameRenderer(GameRenderer gameRenderer) {
+        this.gameRenderer = gameRenderer;
+    }
+
 }

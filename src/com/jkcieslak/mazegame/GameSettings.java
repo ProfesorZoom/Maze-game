@@ -7,8 +7,9 @@ public class GameSettings {
     private int height;
     private int seed;
     private Difficulty difficulty;
-    private Gametype gametype;
-    private String playerName;
+    private Gamemode gamemode;
+    private String playerOneName;
+    private String playerTwoName;
 
     public GameSettings(){
         areChosen = false;
@@ -50,18 +51,18 @@ public class GameSettings {
         this.difficulty = difficulty;
     }
 
-    public Gametype getGametype() {
-        return gametype;
+    public Gamemode getGamemode() {
+        return gamemode;
     }
-    public void setGametype(Gametype gametype) {
-        this.gametype = gametype;
+    public void setGamemode(Gamemode gamemode) {
+        this.gamemode = gamemode;
     }
 
-    public String getPlayerName() {
-        return playerName;
+    public String getPlayerOneName() {
+        return playerOneName;
     }
-    public void setPlayerName(String playerName) {
-        this.playerName = playerName;
+    public void setPlayerOneName(String playerOneName) {
+        this.playerOneName = playerOneName;
     }
 
     public boolean isExiting() {
@@ -69,5 +70,12 @@ public class GameSettings {
     }
     public void setExiting(boolean exiting) {
         this.exiting = exiting;
+    }
+
+    public String getPlayerTwoName() {
+        return playerTwoName;
+    }
+    public void setPlayerTwoName(String playerTwoName) {
+        this.playerTwoName = playerTwoName;
     }
 }

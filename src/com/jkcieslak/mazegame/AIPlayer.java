@@ -7,10 +7,9 @@ public class AIPlayer extends Player{
         super("AI", board);
         this.pathTree = pathTree;
     }
+    @Override
     public void move(){
-        location = pathTree.getExitPath().pop().getCell();
-    }
-    public PlayerType getPlayerType(){
-        return PlayerType.AI;
+        if(pathTree.getExitPath().size() > 0)
+            location = pathTree.getExitPath().pop().getCell();
     }
 }

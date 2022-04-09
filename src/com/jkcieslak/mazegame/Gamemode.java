@@ -1,6 +1,6 @@
 package com.jkcieslak.mazegame;
 
-public enum Gametype {
+public enum Gamemode {
     SOLO,
     VS_AI,
     AI_ONLY,

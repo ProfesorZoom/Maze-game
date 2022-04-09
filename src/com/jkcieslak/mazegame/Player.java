@@ -18,11 +18,8 @@ public class Player {
     public Cell getLocation() {
         return location;
     }
-    public PlayerType getPlayerType(){ return null; }
-
-    public enum PlayerType{
-        AI,
-        HUMAN
+    public void setLocation(Cell location) {
+        this.location = location;
     }
 }
 
