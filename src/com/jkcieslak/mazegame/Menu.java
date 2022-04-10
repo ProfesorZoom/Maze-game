@@ -74,7 +74,7 @@ public class Menu extends JFrame implements ActionListener {
         if(gameSettings.getPlayerOneName() != null)
             playerOneNameField.setText(gameSettings.getPlayerOneName());
         else
-            playerOneNameField.setText("Player2");
+            playerOneNameField.setText("Player1");
         add(playerOneNameField);
 
         playerTwoNameLabel = new JLabel("Player2 name:", SwingConstants.RIGHT);
@@ -86,7 +86,7 @@ public class Menu extends JFrame implements ActionListener {
         if(gameSettings.getPlayerOneName() != null)
             playerTwoNameField.setText(gameSettings.getPlayerOneName());
         else
-            playerTwoNameField.setText("Player1");
+            playerTwoNameField.setText("Player2");
         add(playerTwoNameField);
 
         playButton = new JButton();
