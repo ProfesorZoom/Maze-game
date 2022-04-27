@@ -35,9 +35,13 @@ public class Main {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            boolean playerOneWon = game.getWinner() == game.getPlayerOne();
+            if(game.getWinner() == null){
+                gameRenderer.dispose();
+                gameSettings.setChosen(false);
+                continue;
+            }
             //Post game box
-            FinishBox finishBox = new FinishBox(gameSettings, playerOneWon);
+            FinishBox finishBox = new FinishBox(gameSettings, game.getWinner());
             while(gameSettings.areChosen()){
                 try{
                     Thread.sleep(50);

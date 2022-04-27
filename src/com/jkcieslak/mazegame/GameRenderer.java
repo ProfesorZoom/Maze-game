@@ -5,7 +5,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
-import java.io.File;
 import java.io.IOException;
 
 public class GameRenderer extends JFrame implements KeyListener, ActionListener {
@@ -14,13 +13,49 @@ public class GameRenderer extends JFrame implements KeyListener, ActionListener 
     private final BufferedImage playerTexture;
     private final BufferedImage AITexture;
     private final PlayerPane playerPane;
+    private boolean gamePaused = false;
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if ("forceEnd".equals(e.getActionCommand()))
+        if ("forceEnd".equals(e.getActionCommand())){
             game.forceEnd();
+            gamePaused = false;
+            game.setPaused(false);
+        }
         if("restartGame".equals(e.getActionCommand())){
             game.resetPlayers();
+            renderPlayers();
+            repaint();
+        }
+        if("pauseGameToggle".equals(e.getActionCommand())){
+            gamePaused = !gamePaused;
+            game.setPaused(gamePaused);
+            if(gamePaused) {
+                paintPausedText();
+                this.getLayeredPane().getComponent(1).setVisible(false);
+            }else
+                this.getLayeredPane().getComponent(1).setVisible(true);
+            repaint();
+        }
+        if("showLeaderboard".equals(e.getActionCommand())){
+            gamePaused = true;
+            game.setPaused(true);
+            paintPausedText();
+            this.getLayeredPane().getComponent(1).setVisible(false);
+            repaint();
+            try {
+                LeaderboardBox leaderboardBox = new LeaderboardBox();
+            } catch (IOException ex) {
+                JFrame popup = new JFrame();
+                JPanel panel = new JPanel(new GridLayout(2,1));
+                panel.add(new JLabel("No leaderboard records found."));
+                JButton button = new JButton("OK");
+                button.addActionListener(evt -> popup.dispose());
+                panel.add(button);
+                popup.add(panel);
+                popup.pack();
+                popup.setVisible(true);
+            }
         }
     }
 
@@ -81,15 +116,23 @@ public class GameRenderer extends JFrame implements KeyListener, ActionListener 
 
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
-        JMenuItem forceEndMenuItem = new JMenuItem("Force end");
+        JMenuItem forceEndMenuItem = new JMenuItem("New game");
         forceEndMenuItem.addActionListener(this);
         forceEndMenuItem.setActionCommand("forceEnd");
         JMenuItem restartGameMenuItem = new JMenuItem("Restart game");
         restartGameMenuItem.addActionListener(this);
         restartGameMenuItem.setActionCommand("restartGame");
+        JMenuItem pauseGameMenuItem = new JMenuItem("Pause/Unpause game");
+        pauseGameMenuItem.addActionListener(this);
+        pauseGameMenuItem.setActionCommand("pauseGameToggle");
+        JMenuItem leaderBoardMenuItem = new JMenuItem("Leaderboard");
+        leaderBoardMenuItem.addActionListener(this);
+        leaderBoardMenuItem.setActionCommand("showLeaderboard");
 
         menu.add(forceEndMenuItem);
         menu.add(restartGameMenuItem);
+        menu.add(pauseGameMenuItem);
+        menu.add(leaderBoardMenuItem);
         menuBar.add(menu);
         setJMenuBar(menuBar);
 
@@ -109,8 +152,8 @@ public class GameRenderer extends JFrame implements KeyListener, ActionListener 
         backgroundPanel.setBounds(0, menuBar.getHeight(), game.getBoardWidth()*scale, game.getBoardHeight()*scale + menuBar.getHeight());
         jLayeredPane.add(backgroundPanel, 1);
 
-        playerTexture = loadTexture("balloon.png");
-        AITexture = loadTexture("aibot.png");
+        playerTexture = loadTexture("star.png");
+        AITexture = loadTexture("bean.png");
 
         playerPane = new PlayerPane(playerTexture, AITexture);
         playerPane.setBounds(0, menuBar.getHeight(), game.getBoardWidth()*scale, game.getBoardHeight()*scale + menuBar.getHeight());
@@ -119,6 +162,7 @@ public class GameRenderer extends JFrame implements KeyListener, ActionListener 
         rootPane.setLayeredPane(jLayeredPane);
         setJMenuBar(menuBar);
         setFocusable(true);
+        this.setIconImage(loadTexture("bricks.png"));
 
         addKeyListener(this);
         addComponentListener(new ComponentAdapter() {
@@ -139,8 +183,9 @@ public class GameRenderer extends JFrame implements KeyListener, ActionListener 
     public BufferedImage loadTexture(String path){
         BufferedImage texture;
         try{
-            texture = ImageIO.read(new File(path));
-        } catch (IOException e) {
+            texture = ImageIO.read(getClass().getClassLoader().getResource(path));
+            //texture = ImageIO.read(new File(path));
+        } catch (IOException | IllegalArgumentException e) {
             texture = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
             Graphics2D TextureGraphics = texture.createGraphics();
             TextureGraphics.setColor(Color.MAGENTA);
@@ -152,6 +197,10 @@ public class GameRenderer extends JFrame implements KeyListener, ActionListener 
         }
         return texture;
     }
+    public void paintPausedText(){
+        playerPane.image.getGraphics().setColor(Color.BLACK);
+        playerPane.image.getGraphics().drawString("Paused", playerPane.image.getWidth()-2*scale, playerPane.getHeight()-scale);
+    }
 
     public Game getGame(){
         return this.game;
@@ -160,7 +209,7 @@ public class GameRenderer extends JFrame implements KeyListener, ActionListener 
     public void keyTyped(KeyEvent e) {}
     @Override
     public void keyPressed(KeyEvent e){
-        if(game.getPlayerOne() == null)
+        if(game.getPlayerOne() == null || game.isPaused())
             return;
         int keyCode = e.getKeyCode();
         switch (keyCode){

@@ -7,16 +7,13 @@ import java.util.List;
 import java.util.Random;
 
 public class Board {
-    private final boolean isGenerated;
     private final int width;
     private final int height;
     private Cell[][] field;
     private Cell entrance;
     private Cell exit;
-    private final int seed;
     private final Random rand;
     public Board(int width, int height, int seed){
-        this.seed = seed;
         this.rand = new Random(seed);
         this.width = width;
         this.height = height;
@@ -31,19 +28,8 @@ public class Board {
             }
         }
         generateField();
-        this.isGenerated = true;
-    }
-    public int getWidth(){
-        return width;
-    }
-    public int getHeight(){
-        return height;
     }
     public Cell[][] getField() { return field;}
-    public int getSeed() {return seed;}
-    public boolean isGenerated() {
-        return isGenerated;
-    }
     public Cell getCell(int x, int y){
         return field[y][x];
     }
@@ -55,20 +41,8 @@ public class Board {
         }
         return field[y][x].isWall();
     }
-    public boolean getCellWallState(Cell cell){
-        return field[cell.getY()][cell.getX()].isWall();
-    }
-    public void setCellWallState(int x, int y, boolean isWall){
-        field[y][x].setWallState(isWall);
-    }
     public boolean getCellFinalState(int x, int y){
         return field[y][x].isFinal();
-    }
-    public boolean getCellFinalState(Cell cell){
-        return field[cell.getY()][cell.getX()].isFinal();
-    }
-    public void setCellFinalState(int x, int y, boolean isFinal){
-        field[y][x].setFinalState(isFinal);
     }
     public boolean areBorderCoordinates(int x, int y){
         return (x == 0)
@@ -76,12 +50,7 @@ public class Board {
                 || (y == 0)
                 || (y == (height - 1));
     }
-    public boolean isBorderCell(Cell cell){
-        return (cell.getX() == 0)
-                || (cell.getX() == (width - 1))
-                || (cell.getY() == 0)
-                || (cell.getY() == (height - 1));
-    }
+
     public Cell chooseExit(){
         int x, y;
         boolean exit_on_vertical = rand.nextBoolean(); //whether we generate exit on vertical boundary or horizontal
@@ -113,7 +82,7 @@ public class Board {
         //Main algorithm maze generation loop
         while(!wall_list.isEmpty()){
             temp_cell = wall_list.get(rand.nextInt(wall_list.size()));
-            if(checkCardinalNeighbors(temp_cell) == 1){
+            if(checkEmptyCardinalNeighbors(temp_cell) == 1){
                 temp_cell.setWallState(false);
                 temp_cell.setFinalState(true);
                 addNeighborsToWallList(temp_cell, wall_list);
@@ -123,12 +92,12 @@ public class Board {
         //Adding entrance and exit
         do{
             temp_cell = chooseExit();
-        }while(checkCardinalNeighbors(temp_cell) != 1);
+        }while(checkEmptyCardinalNeighbors(temp_cell) != 1);
         entrance = temp_cell;
         entrance.setWallState(false);
         do{
             temp_cell = chooseExit();
-        }while((checkCardinalNeighbors(temp_cell) != 1) || (temp_cell == entrance));
+        }while((checkEmptyCardinalNeighbors(temp_cell) != 1) || (temp_cell == entrance));
         exit = temp_cell;
         exit.setWallState(false);
     }
@@ -145,7 +114,7 @@ public class Board {
         }
         generateField();
     }
-    public void drawInConsole(){
+    public void drawInConsole(){    //for debug purposes
         for(int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
                 if(field[i][j].isWall())
@@ -156,13 +125,12 @@ public class Board {
             System.out.println();
         }
     }
-
     /**
      * Method for checking the number and type of cells in the direct neighborhood
      * Return type is int
      * @return int, Number of empty cells in neighborhood
      */
-    public int checkCardinalNeighbors(Cell cell){
+    public int checkEmptyCardinalNeighbors(Cell cell){
         int dir_counter, x, y;
         dir_counter = 0;
         x = cell.getX();

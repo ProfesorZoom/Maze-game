@@ -43,7 +43,12 @@ public class LeaderboardBox extends JFrame {
                 tableData[i][4] = tempLeaderboard.get(i).seed();
             }
 
-            leaderboardTable = new JTable(tableData, columnNames);
+            leaderboardTable = new JTable(tableData, columnNames){
+                @Override
+                public boolean isCellEditable(int row, int column){
+                    return false;
+                }
+            };
             leaderboardTable.setPreferredScrollableViewportSize(new Dimension(1280, 720));
             leaderboardTable.setFillsViewportHeight(true);
             add(leaderboardTable);
@@ -51,7 +56,6 @@ public class LeaderboardBox extends JFrame {
             JScrollPane scrollPane = new JScrollPane(leaderboardTable);
             add(scrollPane);
         }
-
     }
 
     public LeaderboardBox() throws IOException {
@@ -64,4 +68,6 @@ public class LeaderboardBox extends JFrame {
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setVisible(true);
     }
+
+
 }

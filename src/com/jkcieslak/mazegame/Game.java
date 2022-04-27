@@ -16,6 +16,7 @@ public class Game implements Runnable {
     private boolean forceCompleted;
     private Player winner;
     private GameRenderer gameRenderer;
+    private boolean isPaused;
 
     public Game(int width, int height, int seed, Gamemode gamemode, Difficulty difficulty, String playerOneName, String playerTwoName){
         forceCompleted = false;
@@ -98,9 +99,6 @@ public class Game implements Runnable {
         }
         return delay;
     }
-    public boolean isForceCompleted() {
-        return forceCompleted;
-    }
     public void resetPlayers(){
         playerOne.setLocation(getEntranceCell());
         playerTwo.setLocation(getEntranceCell());
@@ -120,6 +118,13 @@ public class Game implements Runnable {
         int delay = getAIDelay();
         boolean keeplooping;
         do{
+            while(isPaused){
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             moveAIPlayer();
             gameRenderer.renderPlayers();
             gameRenderer.repaint();
@@ -150,9 +155,15 @@ public class Game implements Runnable {
         }
     }
 
-
     public void setGameRenderer(GameRenderer gameRenderer) {
         this.gameRenderer = gameRenderer;
     }
 
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean paused) {
+        isPaused = paused;
+    }
 }

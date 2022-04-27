@@ -83,8 +83,8 @@ public class Menu extends JFrame implements ActionListener {
 
         playerTwoNameField = new JTextField();
         playerTwoNameField.setBounds(145, 220, 80, 20);
-        if(gameSettings.getPlayerOneName() != null)
-            playerTwoNameField.setText(gameSettings.getPlayerOneName());
+        if(gameSettings.getPlayerTwoName() != null)
+            playerTwoNameField.setText(gameSettings.getPlayerTwoName());
         else
             playerTwoNameField.setText("Player2");
         add(playerTwoNameField);
@@ -135,6 +135,7 @@ public class Menu extends JFrame implements ActionListener {
             gameSettings.setHeight((int)heightSpinner.getValue());
             gameSettings.setWidth((int)widthSpinner.getValue());
             gameSettings.setPlayerOneName(playerOneNameField.getText());
+            gameSettings.setPlayerTwoName(playerTwoNameField.getText());
             gameSettings.setChosen(true);
         }
         if("changeGameType".equals(e.getActionCommand())){

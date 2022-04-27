@@ -13,7 +13,7 @@ public class FinishBox extends JFrame implements ActionListener {
     JButton leaderboardButton;
     JButton exitButton;
 
-    public FinishBox(GameSettings gameSettings, boolean playerWon){
+    public FinishBox(GameSettings gameSettings, Player winner){
         super();
         this.gameSettings = gameSettings;
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -23,21 +23,19 @@ public class FinishBox extends JFrame implements ActionListener {
 
         resultLabel = new JLabel();
         resultLabel.setBounds(0, 10, 320, 20);
+
         switch (gameSettings.getGamemode()){
             case SOLO -> resultLabel.setText("Congratulations, you've found the exit!");
             case AI_ONLY -> resultLabel.setText("The AI simulation has completed.");
             case VS_AI -> {
-                if(playerWon)
+                if(winner instanceof HumanPlayer)
                     resultLabel.setText("Congratulations, you've won!");
-                else
+                else if(winner instanceof AIPlayer)
                     resultLabel.setText("You lost. Better luck next time!");
-            }
-            case PVP -> {
-                if(playerWon)
-                    resultLabel.setText("Player one has won.");
                 else
-                    resultLabel.setText("Player two has won.");
+                    resultLabel.setText("ERROR");
             }
+            case PVP -> resultLabel.setText(winner.getName() + " has won.");
         }
         resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(resultLabel);
